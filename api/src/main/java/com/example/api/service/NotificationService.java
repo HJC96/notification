@@ -3,6 +3,7 @@ package com.example.api.service;
 import com.example.api.dto.NotificationRequest;
 import com.example.core.domain.UserNotificationMetadata;
 import com.example.core.event.NotificationEvent;
+import com.example.core.event.NotificationType;
 import com.example.core.repository.UserNotificationMetadataRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -48,7 +49,7 @@ public class NotificationService {
                 .title(request.getTitle())
                 .body(request.getBody())
                 .targetToken(metadata.getDeviceToken())
-                .type(NotificationEvent.NotificationType.PUSH)
+                .type(NotificationType.PUSH)
                 .build();
 
         kafkaTemplate.send(TOPIC, event);

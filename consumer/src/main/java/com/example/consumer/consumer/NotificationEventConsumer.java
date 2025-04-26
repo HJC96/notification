@@ -13,7 +13,7 @@ public class NotificationEventConsumer {
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile boolean handled = false;
 
-    @KafkaListener(topics = "notification-topic", groupId = "notification-consumer-group")
+    @KafkaListener(topics = "notification-event", groupId = "notification-consumer-group")
     public void consume(NotificationEvent event) {
         System.out.println("Consumed event: " + event);
         handled = true;

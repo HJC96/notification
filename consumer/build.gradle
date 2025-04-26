@@ -3,9 +3,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter' // Spring Boot 기본 기능
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 
     // Kafka 테스트 유틸리티
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+
     // Testcontainers (옵션, EmbeddedKafka만 쓸 거면 없어도 됨)
     testImplementation 'org.testcontainers:junit-jupiter'
 

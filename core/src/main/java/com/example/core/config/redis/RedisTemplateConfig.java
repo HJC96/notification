@@ -1,9 +1,10 @@
 package com.example.core.config.redis;
 
 import com.example.core.domain.UserNotificationMetadata;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -32,12 +33,22 @@ public class RedisTemplateConfig {
 
     @Bean
     public RedisTemplate<String, UserNotificationMetadata> userNotificationMetadataRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, UserNotificationMetadata> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        RedisTemplate<String, UserNotificationMetadata> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
 
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
 
-        return redisTemplate;
+        Jackson2JsonRedisSerializer<UserNotificationMetadata> serializer = new Jackson2JsonRedisSerializer<>(UserNotificationMetadata.class);
+        serializer.setObjectMapper(objectMapper);
+
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
+
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
+
+        template.afterPropertiesSet();
+        return template;
     }
 }

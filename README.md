@@ -113,12 +113,12 @@
 
 #### 도커 컴포우즈로 카프카 및 레디스 컨테이너 실행
 ```
-docker compose -f docker-compose-single-kafka.yaml up -d         
+docker compose -f up -d         
 ```
 
-#### 실행 중인 카프카, 레디스 컨테이너 중지
+#### 실행 중인 카프카
 ```
-docker compose -f docker-compose-single-kafka.yaml stop  
+docker compose -f stop  
 ```
 
 #### 카프카 컨테이너 내부 접속

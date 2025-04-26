@@ -1,11 +1,10 @@
 package com.example.core.repository;
 
 import com.example.core.domain.UserNotificationMetadata;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.Optional;
 
-public interface UserNotificationMetadataRepository extends JpaRepository<UserNotificationMetadata, Long> {
-    @Override
-    Optional<UserNotificationMetadata> findById(Long aLong);
+public interface UserNotificationMetadataRepository {
+    UserNotificationMetadata save(UserNotificationMetadata metadata);
+    Optional<UserNotificationMetadata> findById(Long userId);
+    void deleteById(Long userId);
 }

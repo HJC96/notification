@@ -15,6 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
@@ -44,7 +46,12 @@ class NotificationControllerTest {
 
     @Test
     void 이메일_알림_API를_호출하면_201을_반환한다() throws Exception {
-        EmailNotificationRequest request = new EmailNotificationRequest(1L, "제목", "내용");
+        EmailNotificationRequest request = new EmailNotificationRequest(
+                1L,
+                "제목",
+                Map.of("body", "내용"),
+                "email-template:default"
+        );
 
         mockMvc.perform(post("/api/notification/email")
                         .contentType(MediaType.APPLICATION_JSON)

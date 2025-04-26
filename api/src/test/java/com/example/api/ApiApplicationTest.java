@@ -1,5 +1,6 @@
 package com.example.api;
 
+import com.example.api.service.EmailTemplateService;
 import com.example.api.service.NotificationService;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,6 +14,11 @@ public class ApiApplicationTest {
         @Bean
         public NotificationService notificationService() {
             return Mockito.mock(NotificationService.class);
+        }
+
+        @Bean
+        public EmailTemplateService emailTemplateService() {
+            return Mockito.mock(EmailTemplateService.class);
         }
     }
 }

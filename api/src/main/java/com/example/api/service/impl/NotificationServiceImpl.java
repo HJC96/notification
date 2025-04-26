@@ -3,6 +3,7 @@ package com.example.api.service.impl;
 import com.example.api.dto.request.EmailNotificationRequest;
 import com.example.api.dto.request.PushNotificationRequest;
 import com.example.api.dto.request.SmsNotificationRequest;
+import com.example.api.service.EmailTemplateService;
 import com.example.api.service.NotificationService;
 import com.example.core.domain.UserNotificationMetadata;
 import com.example.core.event.NotificationEvent;
@@ -15,10 +16,11 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
     private static final String USER_META_KEY_PREFIX = "user-meta:";
@@ -31,16 +33,20 @@ public class NotificationServiceImpl implements NotificationService {
     @Qualifier("stringRedisTemplate")
     private final RedisTemplate<String, String> stringRedisTemplate;
     private final KafkaTemplate<String, NotificationEvent> kafkaTemplate;
+    private final EmailTemplateService emailTemplateService;
+
 
     @Override
     public void sendEmailNotification(EmailNotificationRequest request) {
         UserNotificationMetadata metadata = loadUserMetadata(request.getUserId());
-        String emailTemplate = loadEmailTemplate();
+        String emailTemplate = loadEmailTemplate(request.getTemplateKey());
+
+        String finalContent = replaceVariables(emailTemplate, request.getVariables());
 
         NotificationEvent event = NotificationEvent.builder()
                 .notificationType(NotificationType.EMAIL)
                 .title(request.getSubject())
-                .content(emailTemplate.replace("{{body}}", request.getBody()))
+                .content(finalContent)
                 .recipientEmail(metadata.getEmail())
                 .build();
 
@@ -88,12 +94,25 @@ public class NotificationServiceImpl implements NotificationService {
         return metadata;
     }
 
-    private String loadEmailTemplate() {
-        String template = stringRedisTemplate.opsForValue().get(COMMON_EMAIL_TEMPLATE_KEY);
-        if (template == null) {
-            template = "<html><body>{{body}}</body></html>";
-            stringRedisTemplate.opsForValue().set(COMMON_EMAIL_TEMPLATE_KEY, template, 30, TimeUnit.MINUTES);
+    private String loadEmailTemplate(String templateKey) {
+        if (templateKey == null || templateKey.isBlank()) {
+            templateKey = COMMON_EMAIL_TEMPLATE_KEY;
         }
-        return template;
+        return emailTemplateService.getTemplate(templateKey);
+    }
+
+    private String replaceVariables(String template, Map<String, String> variables) {
+        if (template == null) {
+            throw new IllegalArgumentException("이메일 템플릿이 존재하지 않습니다.");
+        }
+        if (variables == null || variables.isEmpty()) {
+            return template;
+        }
+
+        String result = template;
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+            result = result.replace("{{" + entry.getKey() + "}}", entry.getValue());
+        }
+        return result;
     }
 }

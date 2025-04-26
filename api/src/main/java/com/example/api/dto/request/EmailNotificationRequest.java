@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Map;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -18,6 +20,12 @@ public class EmailNotificationRequest {
     @Schema(example = "회원가입 완료", description = "이메일 제목")
     private String subject;
 
-    @Schema(example = "회원가입을 축하합니다!", description = "이메일 본문")
-    private String body;
+    @Schema(
+            example = "{\"name\": \"지찬님\", \"link\": \"https://example.com/reset\"}",
+            description = "이메일 본문 치환용 변수들 (키-값 쌍)"
+    )
+    private Map<String, String> variables;
+
+    @Schema(example = "email-template:welcome", description = "템플릿 키")
+    private String templateKey;
 }

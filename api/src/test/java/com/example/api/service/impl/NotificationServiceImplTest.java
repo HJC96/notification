@@ -3,6 +3,8 @@ package com.example.api.service.impl;
 import com.example.api.dto.request.EmailNotificationRequest;
 import com.example.api.dto.request.PushNotificationRequest;
 import com.example.api.dto.request.SmsNotificationRequest;
+import com.example.api.service.EmailTemplateService;
+import com.example.api.service.NotificationService;
 import com.example.core.domain.UserNotificationMetadata;
 import com.example.core.event.NotificationEvent;
 import com.example.core.repository.UserNotificationMetadataRepository;
@@ -19,7 +21,8 @@ import static org.mockito.Mockito.*;
 
 class NotificationServiceImplTest {
 
-    private NotificationServiceImpl notificationService;
+    private NotificationService notificationService;
+    private EmailTemplateService emailTemplateService;
     private UserNotificationMetadataRepository metadataRepository;
     private RedisTemplate<String, UserNotificationMetadata> userMetadataRedisTemplate;
     private RedisTemplate<String, String> stringRedisTemplate;
@@ -34,14 +37,14 @@ class NotificationServiceImplTest {
         userMetadataRedisTemplate = mock(RedisTemplate.class);
         stringRedisTemplate = mock(RedisTemplate.class);
         kafkaTemplate = mock(KafkaTemplate.class);
-
+        emailTemplateService = mock(EmailTemplateService.class);
         userValueOperations = mock(ValueOperations.class);
         stringValueOperations = mock(ValueOperations.class);
 
         when(userMetadataRedisTemplate.opsForValue()).thenReturn(userValueOperations);
         when(stringRedisTemplate.opsForValue()).thenReturn(stringValueOperations);
 
-        notificationService = new NotificationServiceImpl(metadataRepository, userMetadataRedisTemplate, stringRedisTemplate, kafkaTemplate);
+        notificationService = new NotificationServiceImpl(metadataRepository, userMetadataRedisTemplate, stringRedisTemplate, kafkaTemplate, emailTemplateService);
     }
 
     @Test
@@ -63,12 +66,18 @@ class NotificationServiceImplTest {
     @Test
     void 이메일_알림_전송_성공() {
         // given
-        EmailNotificationRequest request = new EmailNotificationRequest(1L, "Subject", "Email Body");
+        EmailNotificationRequest request = new EmailNotificationRequest(
+                1L,
+                "Subject",
+                java.util.Map.of("body", "Email Body"),
+                "email-template:default"
+        );
         UserNotificationMetadata metadata = new UserNotificationMetadata();
         metadata.setEmail("test@example.com");
 
         when(userValueOperations.get("user-meta:1")).thenReturn(metadata);
         when(stringValueOperations.get("email-template:default")).thenReturn("<html><body>{{body}}</body></html>");
+        when(emailTemplateService.getTemplate("email-template:default")).thenReturn("<html><body>{{body}}</body></html>");
 
         // when
         notificationService.sendEmailNotification(request);

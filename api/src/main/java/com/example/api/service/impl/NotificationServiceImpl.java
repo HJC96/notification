@@ -38,11 +38,10 @@ public class NotificationServiceImpl implements NotificationService {
         String emailTemplate = loadEmailTemplate();
 
         NotificationEvent event = NotificationEvent.builder()
-                .userId(request.getUserId())
+                .notificationType(NotificationType.EMAIL)
                 .title(request.getSubject())
-                .body(emailTemplate.replace("{{body}}", request.getBody()))
-                .targetToken(metadata.getEmail())
-                .type(NotificationType.EMAIL)
+                .content(emailTemplate.replace("{{body}}", request.getBody()))
+                .recipientEmail(metadata.getEmail())
                 .build();
 
         kafkaTemplate.send(TOPIC, event);
@@ -53,11 +52,10 @@ public class NotificationServiceImpl implements NotificationService {
         UserNotificationMetadata metadata = loadUserMetadata(request.getUserId());
 
         NotificationEvent event = NotificationEvent.builder()
-                .userId(request.getUserId())
+                .notificationType(NotificationType.PUSH)
                 .title(request.getTitle())
-                .body(request.getBody())
-                .targetToken(metadata.getDeviceToken())
-                .type(NotificationType.PUSH)
+                .content(request.getBody())
+                .deviceToken(metadata.getDeviceToken())
                 .build();
 
         kafkaTemplate.send(TOPIC, event);
@@ -68,11 +66,10 @@ public class NotificationServiceImpl implements NotificationService {
         UserNotificationMetadata metadata = loadUserMetadata(request.getUserId());
 
         NotificationEvent event = NotificationEvent.builder()
-                .userId(request.getUserId())
+                .notificationType(NotificationType.SMS)
                 .title("[SMS]")
-                .body(request.getMessage())
-                .targetToken(metadata.getPhoneNumber())
-                .type(NotificationType.SMS)
+                .content(request.getMessage())
+                .recipientPhone(metadata.getPhoneNumber())
                 .build();
 
         kafkaTemplate.send(TOPIC, event);

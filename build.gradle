@@ -1,0 +1,51 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+/* 전체 프로젝트 적용 */
+allprojects {
+	group = "com.example"
+	version = "0.0.1-SNAPSHOT"
+
+	repositories {
+		mavenCentral()
+	}
+}
+
+/* 루트 프로젝트 적용 */
+
+subprojects {
+	apply {
+		plugin("java")
+		plugin("java-library")
+		plugin("org.springframework.boot")
+		plugin("io.spring.dependency-management")
+	}
+
+	java {
+		toolchain {
+			languageVersion.set(JavaLanguageVersion.of(21))
+		}
+	}
+
+	dependencies {
+		compileOnly("org.projectlombok:lombok")
+		annotationProcessor("org.projectlombok:lombok")
+
+		testImplementation(platform("org.junit:junit-bom"))
+		testImplementation("org.junit.jupiter:junit-jupiter")
+		testImplementation("org.springframework.boot:spring-boot-starter-test")
+	}
+
+	tasks.test {
+		useJUnitPlatform()
+	}
+}

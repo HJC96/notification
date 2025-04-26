@@ -1,0 +1,4 @@
+dependencies {
+    implementation project(':core') // core 의존
+    implementation 'org.springframework.kafka:spring-kafka'
+}

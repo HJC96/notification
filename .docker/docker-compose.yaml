@@ -1,0 +1,25 @@
+services:
+  zookeeper: # Apache Zookeeper 서비스 설정
+    image: confluentinc/cp-zookeeper:latest # Zookeeper Docker 이미지
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181 # 클라이언트 연결을 위한 포트
+      ZOOKEEPER_TICK_TIME: 2000 # Zookeeper에서 사용하는 기본 시간 단위 (밀리초)
+    ports:
+      - "2181:2181" # 호스트와 컨테이너 간 포트 매핑
+
+  kafka: # Apache Kafka 서비스 설정
+    image: confluentinc/cp-kafka:latest # Kafka Docker 이미지
+    depends_on:
+      - zookeeper # Kafka는 Zookeeper가 시작된 후 실행됨
+    ports:
+      - "9092:9092" # 호스트와 컨테이너 간 포트 매핑
+    environment:
+      KAFKA_BROKER_ID: 1 # Kafka 브로커의 고유 ID
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181 # Zookeeper 연결 문자열
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092 # 클라이언트가 접근할 Kafka 리스너
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # Kafka 내부 토픽의 복제 계수
+
+  redis: # Redis 서비스 설정
+    image: redis:7.4.0 # Redis Docker 이미지
+    ports:
+      - "6379:6379" # 호스트와 컨테이너 간 포트 매핑

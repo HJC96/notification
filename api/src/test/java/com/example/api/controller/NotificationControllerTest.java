@@ -35,14 +35,8 @@ class NotificationControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Autowired // TestBeansConfig에서 mock 주입한것을 가져옴
     private NotificationService notificationService;
-
-    @MockBean
-    private RedisTemplate<String, UserNotificationMetadata> redisTemplate;
-
-    @MockBean
-    private KafkaTemplate<String, NotificationEvent> kafkaTemplate;
 
     @Autowired
     private ObjectMapper objectMapper;

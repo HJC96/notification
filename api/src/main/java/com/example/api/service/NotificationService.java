@@ -5,6 +5,7 @@ import com.example.core.domain.UserNotificationMetadata;
 import com.example.core.event.NotificationEvent;
 import com.example.core.repository.UserNotificationMetadataRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@RequiredArgsConstructor
 public class NotificationService {
 
     private final UserNotificationMetadataRepository metadataRepository;
@@ -21,6 +21,12 @@ public class NotificationService {
 
     private static final String TOPIC = "notification-event";
     private static final String USER_META_KEY_PREFIX = "user-meta:";
+
+    public NotificationService(UserNotificationMetadataRepository metadataRepository, @Qualifier("userNotificationMetadataRedisTemplate") RedisTemplate<String, UserNotificationMetadata> redisTemplate, KafkaTemplate<String, NotificationEvent> kafkaTemplate) {
+        this.metadataRepository = metadataRepository;
+        this.redisTemplate = redisTemplate;
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     public void sendNotification(NotificationRequest request) {
         String key = USER_META_KEY_PREFIX + request.getUserId();

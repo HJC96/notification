@@ -2,15 +2,18 @@ package com.example.core.repository.impl;
 
 import com.example.core.domain.UserNotificationMetadata;
 import com.example.core.repository.UserNotificationMetadataRepository;
+import com.example.core.repository.jpa.UserNotificationMetadataJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 @RequiredArgsConstructor
 public class UserNotificationMetadataRepositoryImpl implements UserNotificationMetadataRepository {
 
-    private final JpaRepository<UserNotificationMetadata, Long> jpaRepository;
+    private final UserNotificationMetadataJpaRepository jpaRepository;
 
     @Override
     public UserNotificationMetadata save(UserNotificationMetadata metadata) {

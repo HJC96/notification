@@ -87,8 +87,40 @@
 
 ## 🚀 기술 스택
 
-- Spring Boot 3.x
+- Spring Boot 3.4.5
 - Spring Data JPA
 - Spring Data Redis
-- TBD
+- Spring for Apache Kafka
+- H2 Database
+- Docker Compose
 ---
+
+## 🐳 Docker를 활용한 실행 환경
+
+### 사용한 Docker 이미지
+
+- **Kafka**: confluentinc/cp-kafka
+- **Zookeeper**: confluentinc/cp-zookeeper
+- **Redis**: redis
+
+### 주요 Docker 명령어
+
+#### 도커 컴포우즈로 카프카 및 레디스 컨테이너 실행
+```
+docker compose -f docker-compose-single-kafka.yaml up -d         
+```
+
+#### 실행 중인 카프카, 레디스 컨테이너 중지
+```
+docker compose -f docker-compose-single-kafka.yaml stop  
+```
+
+#### 카프카 컨테이너 내부 접속
+```
+docker exec -it <kafka-container-id> /bin/bash
+```
+
+#### 카프카 토픽 리스트 조회
+```
+kafka-topics --list --bootstrap-server localhost:9092
+```

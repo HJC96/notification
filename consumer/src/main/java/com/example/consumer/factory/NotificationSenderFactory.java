@@ -5,6 +5,7 @@ import com.example.consumer.sender.NotificationSender;
 import com.example.consumer.sender.PushNotificationSender;
 import com.example.consumer.sender.SmsNotificationSender;
 import com.example.core.event.NotificationType;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +17,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NotificationSenderFactory {
 
-    private final Map<NotificationType, NotificationSender> senderMap;
+    private final List<NotificationSender> senders;
+    private Map<NotificationType, NotificationSender> senderMap;
 
-    public NotificationSenderFactory(List<NotificationSender> senders) {
+
+    @PostConstruct
+    public void init() {
         senderMap = new HashMap<>();
         for (NotificationSender sender : senders) {
             if (sender instanceof EmailNotificationSender) {

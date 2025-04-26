@@ -1,9 +1,11 @@
 package com.example.consumer.sender;
 
+import com.example.consumer.service.PushService;
 import com.example.core.event.NotificationEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Component
@@ -23,13 +25,4 @@ public class PushNotificationSender implements NotificationSender{
             log.error("Push 발송 실패: deviceToken={}, error={}", event.getDeviceToken(), e.getMessage(), e);
             throw new RuntimeException("Push 발송 실패", e);
         }
-    }
-
-    class PushService {
-
-        public void sendPush(String deviceToken, String title, String body) {
-            System.out.println("📱 가상 Push 전송: deviceToken=" + deviceToken +
-                    " / title=" + title + " / body=" + body);
-        }
-    }
-}
+    }}

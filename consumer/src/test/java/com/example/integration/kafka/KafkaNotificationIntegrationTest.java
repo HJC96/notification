@@ -1,6 +1,7 @@
 package com.example.integration.kafka;
 
 import com.example.consumer.ConsumerApplication;
+import com.example.consumer.config.MailConfig;
 import com.example.consumer.consumer.NotificationEventConsumer;
 import com.example.core.event.NotificationEvent;
 import com.example.core.event.NotificationType;
@@ -11,7 +12,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -20,27 +20,22 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-/**
- * Kafka Notification 통합 테스트
- */
-@SpringBootTest(classes = {ConsumerApplication.class, KafkaTestConfig.class})
-@EmbeddedKafka(partitions = 1, topics = {"notification-topic"})
+@SpringBootTest(classes = {ConsumerApplication.class, KafkaTestConfig.class, MailConfig.class})
+@EmbeddedKafka(partitions = 1, topics = {"notification-event"})
 @ActiveProfiles("test")
 @Testcontainers
 class KafkaNotificationIntegrationTest {
 
-    /*Embedded Kafka를 테스트용으로 띄웠는데,
-    Consumer는 localhost:9092 (운영용 Kafka 주소) 를 바라보면 안됨 -> appliction.test.yaml 추가*/
     @Autowired
     private EmbeddedKafkaBroker embeddedKafkaBroker;
 
@@ -50,19 +45,20 @@ class KafkaNotificationIntegrationTest {
     @Autowired
     private KafkaTemplate<String, NotificationEvent> kafkaTemplate;
 
+    @Autowired
+    private JavaMailSender javaMailSender;
+
     @Test
     void notificationEvent가_정상적으로_Consumer에서_처리된다() throws Exception {
-
         NotificationEvent event = NotificationEvent.builder()
-                .userId(1L)
+                .notificationType(NotificationType.PUSH)
                 .title("Test Title")
-                .body("Test Body")
-                .targetToken("device-token")
-                .type(NotificationType.PUSH)
+                .content("Test Content")
+                .deviceToken("device-token")
                 .build();
 
         // when
-        kafkaTemplate.send("notification-topic", event);
+        kafkaTemplate.send("notification-event", event);
 
         // then
         await()
@@ -81,15 +77,14 @@ class KafkaNotificationIntegrationTest {
 
         // 2. 이벤트 생성
         NotificationEvent event = NotificationEvent.builder()
-                .userId(1L)
+                .notificationType(NotificationType.PUSH)
                 .title("Test Title")
-                .body("Test Body")
-                .targetToken("test-device-token")
-                .type(NotificationType.PUSH)
+                .content("Test Content")
+                .deviceToken("test-device-token")
                 .build();
 
         // 3. Kafka 전송
-        kafkaTemplate.send("notification-topic", event);
+        kafkaTemplate.send("notification-event", event);
 
         // 4. Consumer로 메시지 검증
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps("test-group", "false", embeddedKafkaBroker);
@@ -99,12 +94,12 @@ class KafkaNotificationIntegrationTest {
                 new JsonDeserializer<>(NotificationEvent.class, false)
         );
 
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, "notification-topic");
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, "notification-event");
 
-        ConsumerRecord<String, NotificationEvent> received = KafkaTestUtils.getSingleRecord(consumer, "notification-topic");
+        ConsumerRecord<String, NotificationEvent> received = KafkaTestUtils.getSingleRecord(consumer, "notification-event");
 
         assertThat(received).isNotNull();
         assertThat(received.value().getTitle()).isEqualTo("Test Title");
-        assertThat(received.value().getBody()).isEqualTo("Test Body");
+        assertThat(received.value().getContent()).isEqualTo("Test Content");
     }
 }

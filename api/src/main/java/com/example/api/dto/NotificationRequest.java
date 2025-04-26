@@ -9,4 +9,10 @@ public class NotificationRequest {
     private Long userId;
     private String title;
     private String body;
+
+    public NotificationRequest(Long userId, String title, String body) {
+        this.userId = userId;
+        this.title = title;
+        this.body = body;
+    }
 }

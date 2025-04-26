@@ -1,5 +1,4 @@
 dependencies {
-    implementation project(':core')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.kafka:spring-kafka'
+    implementation project(':core') // core 모듈 의존, 의존성 자체는 받지 못함.
+    implementation 'org.springframework.boot:spring-boot-starter-web' // REST API
 }

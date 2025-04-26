@@ -1,5 +1,7 @@
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.kafka:spring-kafka'
+    api 'org.springframework.boot:spring-boot-starter-data-jpa' // Entity/Repository 사용을 위해
+    api 'org.springframework.boot:spring-boot-starter-data-redis' // Redis 객체 저장할 경우 대비
+    api 'org.springframework.kafka:spring-kafka' // Kafka 메시지 객체 직렬화/역직렬화 대비
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 }

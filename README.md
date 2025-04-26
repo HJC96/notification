@@ -1,4 +1,7 @@
 # Notification System
+<p align="center">
+  <img src="img.png" width="25%" />
+</p>
 
 이 프로젝트는 **"대규모 시스템 설계 기초"** 책을 읽고 학습한 내용을 바탕으로 설계되었습니다.  
 실제 서비스에서 요구되는 알림 시스템의 요구사항과 아키텍처를 이해하고, 이를 실습 형태로 구현하기 위해 시작되었습니다.  
@@ -45,6 +48,9 @@
 - 대량 트래픽 대응 시 시스템 안정성 향상
 
 특히 이메일 알림을 위해 HTML 포맷의 템플릿을 Redis에 저장하고, 빠르게 로딩하여 사용합니다.
+1. H2 DB에 미리 여러 이메일 템플릿 (welcome, default 등) 등록해둠. 
+2. 이메일 보낼 때마다 템플릿 키와 변수 맵을 받아서 Redis에 템플릿을 캐싱해서 빠르게 조회.
+3. 실제 이메일 본문은 템플릿에 변수를 치환해서 만들어서 발송하도록 변경한 거야.
 
 
 ## 🔥 시스템 컴포넌트 역할
@@ -101,7 +107,7 @@
 
 - **Kafka**: confluentinc/cp-kafka
 - **Zookeeper**: confluentinc/cp-zookeeper
-- **Redis**: redis
+- **Redis**: redis:7.4.0
 
 ### 주요 Docker 명령어
 

@@ -17,7 +17,5 @@ public class NotificationEvent {
     private String targetToken;  // 알림을 보낼 단말기 토큰
     private NotificationType type; // 알림 타입 (PUSH, SMS, EMAIL 구분용)
 
-    public enum NotificationType {
-        PUSH, SMS, EMAIL
-    }
+
 }

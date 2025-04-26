@@ -1,23 +1,34 @@
 package com.example.consumer.consumer;
 
 import com.example.core.event.NotificationEvent;
-import com.example.consumer.service.NotificationProcessorService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-@Slf4j
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 @Component
-@RequiredArgsConstructor
 public class NotificationEventConsumer {
 
-    private final NotificationProcessorService notificationProcessorService;
+    private final CountDownLatch latch = new CountDownLatch(1);
+    private volatile boolean handled = false;
 
     @KafkaListener(topics = "notification-topic", groupId = "notification-consumer-group")
     public void consume(NotificationEvent event) {
-        log.info("Received notification event: {}", event);
+        System.out.println("Consumed event: " + event);
+        handled = true;
+        latch.countDown(); // 메시지 소비하면 latch 감소
+    }
 
-        notificationProcessorService.process(event);
+    public boolean isHandled() {
+        return handled;
+    }
+
+    public void reset() {
+        handled = false;
+    }
+
+    public boolean awaitMessage(long timeoutSeconds) throws InterruptedException {
+        return latch.await(timeoutSeconds, TimeUnit.SECONDS);
     }
 }

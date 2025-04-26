@@ -1,6 +1,7 @@
 package com.example.integration.kafka;
 
 import com.example.consumer.ConsumerApplication;
+import com.example.consumer.consumer.NotificationEventConsumer;
 import com.example.core.event.NotificationEvent;
 import com.example.core.event.NotificationType;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -10,6 +11,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -22,20 +24,51 @@ import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 /**
  * Kafka Notification 통합 테스트
  */
-@SpringBootTest(classes = ConsumerApplication.class)  // 이걸 명시!
+@SpringBootTest(classes = {ConsumerApplication.class, KafkaTestConfig.class})
 @EmbeddedKafka(partitions = 1, topics = {"notification-topic"})
 @ActiveProfiles("test")
 @Testcontainers
 class KafkaNotificationIntegrationTest {
 
+    /*Embedded Kafka를 테스트용으로 띄웠는데,
+    Consumer는 localhost:9092 (운영용 Kafka 주소) 를 바라보면 안됨 -> appliction.test.yaml 추가*/
     @Autowired
     private EmbeddedKafkaBroker embeddedKafkaBroker;
+
+    @Autowired
+    private NotificationEventConsumer consumer;
+
+    @Autowired
+    private KafkaTemplate<String, NotificationEvent> kafkaTemplate;
+
+    @Test
+    void notificationEvent가_정상적으로_Consumer에서_처리된다() throws Exception {
+
+        NotificationEvent event = NotificationEvent.builder()
+                .userId(1L)
+                .title("Test Title")
+                .body("Test Body")
+                .targetToken("device-token")
+                .type(NotificationType.PUSH)
+                .build();
+
+        // when
+        kafkaTemplate.send("notification-topic", event);
+
+        // then
+        await()
+                .atMost(20, TimeUnit.SECONDS)
+                .untilAsserted(() -> assertThat(consumer.isHandled()).isTrue());
+    }
 
     @Test
     void notificationEvent가_정상적으로_발행되고_소비된다() {

@@ -4,7 +4,6 @@ import com.example.api.dto.NotificationRequest;
 import com.example.core.domain.UserNotificationMetadata;
 import com.example.core.event.NotificationEvent;
 import com.example.core.repository.UserNotificationMetadataRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;

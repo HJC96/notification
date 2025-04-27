@@ -13,4 +13,4 @@ INSERT INTO user_notification_metadata (
 INSERT INTO email_template (template_key, template_content) VALUES
 ('email-template:default', '<html><body>{{body}}</body></html>'),
 ('email-template:welcome', '<html><body>Welcome, {{name}}!</body></html>'),
-('email-template:reset-password', '<html><body>Reset your password <a href=\"{{link}}\">here</a>.</body></html>');
+('email-template:reset-password', '<html><body> {{name}} Reset your password <a href=\"{{link}}\">here</a>.</body></html>');

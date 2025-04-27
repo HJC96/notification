@@ -51,7 +51,9 @@
 1. H2 DB에 미리 여러 이메일 템플릿 (welcome, default 등) 등록. 
 2. 이메일 보낼 때마다 템플릿 키와 변수 맵을 받아서 Redis에 템플릿을 캐싱해서 빠르게 조회.
 3. 실제 이메일 본문은 템플릿에 변수를 치환해서 만들어서 발송하도록 변경.
+- 템플릿 예시
 
+```{{name}} Reset your password <a href=\"{{link}}\">here</a>.```
 
 ## 🔥 시스템 컴포넌트 역할
 
@@ -130,3 +132,7 @@ docker exec -it <kafka-container-id> /bin/bash
 ```
 kafka-topics --list --bootstrap-server localhost:9092
 ```
+🧩 향후 추가 구현 계획
+1. 알림 템플릿 시스템 개선 (✅) -> 다양한 상황별 이메일 템플릿 지원 및 Redis 캐싱 최적화
+2. 재시도 및 실패 처리 로직 (❎) -> 제3자 서비스 응답 실패 시 재전송
+3. 전송률 제한 (❎) -> 특정 사용자 또는 IP 기준으로 초당/분당 전송 요청 제한 

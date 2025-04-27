@@ -17,7 +17,7 @@ public class EmailNotificationRequest {
     @Schema(example = "1", description = "사용자 ID")
     private Long userId;
 
-    @Schema(example = "회원가입 완료", description = "이메일 제목")
+    @Schema(example = "패스워드 리셋", description = "이메일 제목")
     private String subject;
 
     @Schema(
@@ -26,6 +26,6 @@ public class EmailNotificationRequest {
     )
     private Map<String, String> variables;
 
-    @Schema(example = "email-template:welcome", description = "템플릿 키")
+    @Schema(example = "email-template:reset-password", description = "템플릿 키")
     private String templateKey;
 }

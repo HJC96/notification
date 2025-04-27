@@ -23,7 +23,7 @@ public class EmailNotificationSender implements NotificationSender{
 
             mailSender.send(message);*/
 
-            log.info("Email 발송 완료: to={}, title={}", event.getRecipientEmail(), event.getTitle());
+            log.info("Email 발송 완료: to={}, title={}, content={}", event.getRecipientEmail(), event.getTitle(), event.getContent());
         } catch (Exception e) {
             log.error("Email 발송 실패: to={}, error={}", event.getRecipientEmail(), e.getMessage(), e);
             throw new RuntimeException("Email 발송 실패", e);

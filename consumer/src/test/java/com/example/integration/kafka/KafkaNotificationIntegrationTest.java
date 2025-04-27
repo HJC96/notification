@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,10 +31,11 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-@SpringBootTest(classes = {ConsumerApplication.class, KafkaTestConfig.class, MailConfig.class})
+//@SpringBootTest(classes = {ConsumerApplication.class, KafkaTestConfig.class, MailConfig.class})
+@SpringBootTest(classes = {ConsumerApplication.class, MailConfig.class})
 @EmbeddedKafka(partitions = 1, topics = {"notification-event"})
 @ActiveProfiles("test")
-@Testcontainers
+//@Testcontainers
 class KafkaNotificationIntegrationTest {
 
     @Autowired
@@ -48,6 +50,18 @@ class KafkaNotificationIntegrationTest {
     @Autowired
     private JavaMailSender javaMailSender;
 
+
+    @BeforeEach
+    void setUp() {
+        // 1. KafkaTemplate 직접 생성
+        Map<String, Object> producerProps = KafkaTestUtils.producerProps(embeddedKafkaBroker);
+        ProducerFactory<String, NotificationEvent> producerFactory =
+                new DefaultKafkaProducerFactory<>(producerProps, new StringSerializer(), new JsonSerializer<>());
+
+        kafkaTemplate = new KafkaTemplate<>(producerFactory);
+    }
+
+    /* 테스트 컨테이너 사용 */
     @Test
     void notificationEvent가_정상적으로_Consumer에서_처리된다() throws Exception {
         NotificationEvent event = NotificationEvent.builder()
@@ -66,14 +80,10 @@ class KafkaNotificationIntegrationTest {
                 .untilAsserted(() -> assertThat(consumer.isHandled()).isTrue());
     }
 
+
+    /* embeddedKafkaBroker 사용 테스트 */
     @Test
     void notificationEvent가_정상적으로_발행되고_소비된다() {
-        // 1. KafkaTemplate 직접 생성
-        Map<String, Object> producerProps = KafkaTestUtils.producerProps(embeddedKafkaBroker);
-        ProducerFactory<String, NotificationEvent> producerFactory =
-                new DefaultKafkaProducerFactory<>(producerProps, new StringSerializer(), new JsonSerializer<>());
-
-        KafkaTemplate<String, NotificationEvent> kafkaTemplate = new KafkaTemplate<>(producerFactory);
 
         // 2. 이벤트 생성
         NotificationEvent event = NotificationEvent.builder()

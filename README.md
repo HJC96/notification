@@ -124,4 +124,8 @@ kafka-topics --list --bootstrap-server localhost:9092
 🧩 향후 추가 구현 계획
 1. 알림 템플릿 시스템 개선 (✅) -> 다양한 상황별 이메일 템플릿 지원 및 Redis 캐싱 최적화
 2. 재시도 및 실패 처리 로직 (✅) -> 제3자 서비스 응답 실패 시 재전송
+- 1. notification-event 토픽에서 첫 소비 실패
+- 2. Spring이 자동으로 notification-event-retry 토픽으로 보내서
+- 3. retry-consumer들이 notification-event-retry 를 계속 소비하면서 재시도
+- 4. 여기서도 실패하면 → notification-event-dlq 로 최종 이동
 3. 전송률 제한 (❎) -> 특정 사용자 또는 IP 기준으로 초당/분당 전송 요청 제한 

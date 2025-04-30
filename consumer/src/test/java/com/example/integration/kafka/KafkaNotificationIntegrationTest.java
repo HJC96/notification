@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -30,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //@SpringBootTest(classes = {ConsumerApplication.class, KafkaTestConfig.class, MailConfig.class})
 @SpringBootTest(classes = {ConsumerApplication.class, MailConfig.class})
@@ -42,6 +44,9 @@ class KafkaNotificationIntegrationTest {
     private EmbeddedKafkaBroker embeddedKafkaBroker;
 
     @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Autowired
     private NotificationEventConsumer consumer;
 
     @Autowired
@@ -49,6 +54,8 @@ class KafkaNotificationIntegrationTest {
 
     @Autowired
     private JavaMailSender javaMailSender;
+
+    private final Long userId = 1L;
 
 
     @BeforeEach
@@ -59,13 +66,15 @@ class KafkaNotificationIntegrationTest {
                 new DefaultKafkaProducerFactory<>(producerProps, new StringSerializer(), new JsonSerializer<>());
 
         kafkaTemplate = new KafkaTemplate<>(producerFactory);
+        redisTemplate.delete("rate_limit:user:" + userId);
+        consumer.resetHandled();
     }
 
-    /* 테스트 컨테이너 사용 */
     @Test
     void notificationEvent가_정상적으로_Consumer에서_처리된다() throws Exception {
         NotificationEvent event = NotificationEvent.builder()
-                .notificationType(NotificationType.PUSH)
+                .userId(1L)
+                .notificationType(NotificationType.SMS)
                 .title("Test Title")
                 .content("Test Content")
                 .deviceToken("device-token")
@@ -87,7 +96,7 @@ class KafkaNotificationIntegrationTest {
 
         // 2. 이벤트 생성
         NotificationEvent event = NotificationEvent.builder()
-                .notificationType(NotificationType.PUSH)
+                .notificationType(NotificationType.SMS)
                 .title("Test Title")
                 .content("Test Content")
                 .deviceToken("test-device-token")
@@ -111,5 +120,28 @@ class KafkaNotificationIntegrationTest {
         assertThat(received).isNotNull();
         assertThat(received.value().getTitle()).isEqualTo("Test Title");
         assertThat(received.value().getContent()).isEqualTo("Test Content");
+    }
+
+    @Test
+    void 초당5회_이상_전송시_차단되어야_한다() throws InterruptedException {
+        NotificationEvent event = NotificationEvent.builder()
+                .userId(userId)
+                .notificationType(NotificationType.SMS)
+                .title("Rate Limit Test")
+                .content("내용")
+                .recipientPhone("010-1234-5678")
+                .build();
+
+        // 10개 이벤트를 빠르게 전송
+        for (int i = 1; i <= 10; i++) {
+            kafkaTemplate.send("notification-event", event);
+            Thread.sleep(50); // 50ms 간격으로 전송 => 1초 이내 10건
+        }
+
+        Thread.sleep(3000); // Kafka Listener가 처리할 시간
+
+        // consumer가 몇 번 처리했는지 확인 (AtomicInteger로 바꾸는 게 더 정밀함)
+        int handledCount = consumer.getHandledCount();
+        assertEquals(5, handledCount, "정상적으로 처리된 요청은 최대 5건이어야 한다");
     }
 }

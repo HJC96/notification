@@ -4,7 +4,7 @@
 </p>
 
 이 프로젝트는 **"대규모 시스템 설계 기초"** 책을 읽고 학습한 내용을 바탕으로 설계했습니다.  
-실제 서비스에서 요구되는 알림 시스템의 요구사항과 아키텍처를 더 잘 이해하기 위해 이를 실습 구현해본 것입니다.  
+알림 시스템의 요구사항과 아키텍처를 더 잘 이해하기 위해 이를 실습 구현해본 것입니다.  
 
 ---
 
@@ -102,14 +102,14 @@
 
 ### 주요 Docker 명령어
 
-#### 도커 컴포우즈로 카프카 및 레디스 컨테이너 실행
+#### 도커 컴포즈로 카프카 및 레디스 컨테이너 실행(백그라운드)
 ```
-docker compose -f up -d         
+docker-compose up -d
 ```
 
-#### 실행 중인 카프카
+#### 도커 컴포즈 다운
 ```
-docker compose -f stop  
+docker-compose down
 ```
 
 #### 카프카 컨테이너 내부 접속
@@ -121,14 +121,23 @@ docker exec -it <kafka-container-id> /bin/bash
 ```
 kafka-topics --list --bootstrap-server localhost:9092
 ```
-🧩 향후 추가 구현 계획
-1. 알림 템플릿 시스템 개선 (✅) -> 다양한 상황별 이메일 템플릿 지원 및 Redis 캐싱 최적화
-2. 재시도 및 실패 처리 로직 (✅) -> 제3자 서비스 응답 실패 시 재전송
-- 1. notification-event 토픽에서 첫 소비 실패
-- 2. Spring이 자동으로 notification-event-retry 토픽으로 보내서
-- 3. retry-consumer들이 notification-event-retry 를 계속 소비하면서 재시도
-- 4. 여기서도 실패하면 → notification-event-dlq 로 최종 이동
-3. 전송률 제한 (✅) -> 특정 사용자 또는 IP 기준으로 초당/분당 전송 요청 제한
-- 1. NotificationEventConsumer에 초당 5회 제한 로직 적용
-- 2. Redis INCR, EXPIRE 활용하여 사용자별 요청 횟수 카운팅
-- 3. 전송 횟수 초과 시 RuntimeException 발생으로 처리 중단 
+# 알림 시스템 개선 사항
+
+## 1. 알림 템플릿 시스템 개선 ✅
+- 다양한 상황별 이메일 템플릿 지원
+- Redis 캐싱 최적화
+
+## 2. 재시도 및 실패 처리 로직 ✅
+- 제3자 서비스 응답 실패 시 재전송 처리
+- 동작 흐름:
+  - `notification-event` 토픽에서 첫 소비 실패
+  - Spring이 자동으로 `notification-event-retry` 토픽으로 전송
+  - `retry-consumer`들이 `notification-event-retry`를 계속 소비하며 재시도
+  - 재시도에서도 실패할 경우 → `notification-event-dlq`로 최종 이동
+
+## 3. 전송률 제한 ✅
+- 특정 사용자 또는 IP 기준으로 초당/분당 전송 요청 제한
+- 구현 방식:
+  - `NotificationEventConsumer`에 초당 5회 제한 로직 적용
+  - Redis의 `INCR`, `EXPIRE` 활용하여 사용자별 요청 횟수 카운팅
+  - 전송 횟수 초과 시 `RuntimeException` 발생으로 처리 중단

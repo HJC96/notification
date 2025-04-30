@@ -128,4 +128,7 @@ kafka-topics --list --bootstrap-server localhost:9092
 - 2. Spring이 자동으로 notification-event-retry 토픽으로 보내서
 - 3. retry-consumer들이 notification-event-retry 를 계속 소비하면서 재시도
 - 4. 여기서도 실패하면 → notification-event-dlq 로 최종 이동
-3. 전송률 제한 (❎) -> 특정 사용자 또는 IP 기준으로 초당/분당 전송 요청 제한 
+3. 전송률 제한 (✅) -> 특정 사용자 또는 IP 기준으로 초당/분당 전송 요청 제한
+- 1. NotificationEventConsumer에 초당 5회 제한 로직 적용
+- 2. Redis INCR, EXPIRE 활용하여 사용자별 요청 횟수 카운팅
+- 3. 전송 횟수 초과 시 RuntimeException 발생으로 처리 중단 

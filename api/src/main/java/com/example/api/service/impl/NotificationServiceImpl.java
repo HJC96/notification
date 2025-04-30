@@ -44,6 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
         String finalContent = replaceVariables(emailTemplate, request.getVariables());
 
         NotificationEvent event = NotificationEvent.builder()
+                .userId(request.getUserId())
                 .notificationType(NotificationType.EMAIL)
                 .title(request.getSubject())
                 .content(finalContent)
@@ -58,6 +59,7 @@ public class NotificationServiceImpl implements NotificationService {
         UserNotificationMetadata metadata = loadUserMetadata(request.getUserId());
 
         NotificationEvent event = NotificationEvent.builder()
+                .userId(request.getUserId())
                 .notificationType(NotificationType.PUSH)
                 .title(request.getTitle())
                 .content(request.getBody())
@@ -72,6 +74,7 @@ public class NotificationServiceImpl implements NotificationService {
         UserNotificationMetadata metadata = loadUserMetadata(request.getUserId());
 
         NotificationEvent event = NotificationEvent.builder()
+                .userId(request.getUserId())
                 .notificationType(NotificationType.SMS)
                 .title("[SMS]")
                 .content(request.getMessage())

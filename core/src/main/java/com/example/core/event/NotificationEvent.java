@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NotificationEvent {
+    private Long userId;           // 사용자 ID 추가
 
     private NotificationType notificationType; // 알림 종류 (SMS, EMAIL, PUSH)
 
